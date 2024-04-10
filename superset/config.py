@@ -43,7 +43,7 @@ from flask import Blueprint
 from flask_appbuilder.security.manager import AUTH_DB
 from flask_caching.backends.base import BaseCache
 from pandas import Series
-from pandas._libs.parsers import STR_NA_VALUES  # pylint: disable=no-name-in-module
+from pandas._libs.parsers import STR_NA_VALUES
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm.query import Query
 
@@ -1406,6 +1406,35 @@ PREFERRED_DATABASES: list[str] = [
 # database times out. Instead of relying on the driver timeout we can specify a shorter
 # one here.
 TEST_DATABASE_CONNECTION_TIMEOUT = timedelta(seconds=30)
+
+# Details needed for databases that allows user to authenticate using personal
+# OAuth2 tokens. See https://github.com/apache/superset/issues/20300 for more
+# information. The scope and URIs are optional.
+DATABASE_OAUTH2_CLIENTS: dict[str, dict[str, Any]] = {
+    # "Google Sheets": {
+    #     "id": "XXX.apps.googleusercontent.com",
+    #     "secret": "GOCSPX-YYY",
+    #     "scope": " ".join(
+    #         [
+    #             "https://www.googleapis.com/auth/drive.readonly",
+    #             "https://www.googleapis.com/auth/spreadsheets",
+    #             "https://spreadsheets.google.com/feeds",
+    #         ]
+    #     ),
+    #     "authorization_request_uri": "https://accounts.google.com/o/oauth2/v2/auth",
+    #     "token_request_uri": "https://oauth2.googleapis.com/token",
+    # },
+}
+# OAuth2 state is encoded in a JWT using the alogorithm below.
+DATABASE_OAUTH2_JWT_ALGORITHM = "HS256"
+# By default the redirect URI points to /api/v1/database/oauth2/ and doesn't have to be
+# specified. If you're running multiple Superset instances you might want to have a
+# proxy handling the redirects, since redirect URIs need to be registered in the OAuth2
+# applications. In that case, the proxy can forward the request to the correct instance
+# by looking at the `default_redirect_uri` attribute in the OAuth2 state object.
+# DATABASE_OAUTH2_REDIRECT_URI = "http://localhost:8088/api/v1/database/oauth2/"
+# Timeout when fetching access and refresh tokens.
+DATABASE_OAUTH2_TIMEOUT = timedelta(seconds=30)
 
 # Enable/disable CSP warning
 CONTENT_SECURITY_POLICY_WARNING = True

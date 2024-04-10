@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,10 +17,21 @@
  * under the License.
  */
 
-import getCLI from './cli.js';
-import Context from './context.js';
+import React, { useMemo } from 'react';
+import { ensureIsArray } from '@superset-ui/core';
+import { ChartLinkedDashboard } from 'src/types/Chart';
+import CrossLinks from './CrossLinks';
 
-const envContext = new Context('CLI');
-const cli = getCLI(envContext);
-
-cli.parse();
+export const DashboardCrossLinks = React.memo(
+  ({ dashboards }: { dashboards: ChartLinkedDashboard[] }) => {
+    const crossLinks = useMemo(
+      () =>
+        ensureIsArray(dashboards).map((d: ChartLinkedDashboard) => ({
+          title: d.dashboard_title,
+          id: d.id,
+        })),
+      [dashboards],
+    );
+    return <CrossLinks crossLinks={crossLinks} />;
+  },
+);
