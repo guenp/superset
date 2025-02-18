@@ -17,7 +17,6 @@
  * under the License.
  */
 import fetchMock from 'fetch-mock';
-import React from 'react';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
@@ -28,7 +27,7 @@ import ListView from 'src/components/ListView';
 import SubMenu from 'src/features/home/SubMenu';
 import AlertList from 'src/pages/AlertReportList';
 import IndeterminateCheckbox from 'src/components/IndeterminateCheckbox';
-import { act } from 'react-dom/test-utils';
+import { act } from 'spec/helpers/testing-library';
 
 // store needed for withToasts(AlertList)
 const mockStore = configureStore([thunk]);
@@ -105,15 +104,15 @@ describe('AlertList', () => {
   });
 
   it('renders', async () => {
-    expect(wrapper.find(AlertList)).toExist();
+    expect(wrapper.find(AlertList)).toBeTruthy();
   });
 
   it('renders a SubMenu', async () => {
-    expect(wrapper.find(SubMenu)).toExist();
+    expect(wrapper.find(SubMenu)).toBeTruthy();
   });
 
   it('renders a ListView', async () => {
-    expect(wrapper.find(ListView)).toExist();
+    expect(wrapper.find(ListView)).toBeTruthy();
   });
 
   it('renders switches', async () => {

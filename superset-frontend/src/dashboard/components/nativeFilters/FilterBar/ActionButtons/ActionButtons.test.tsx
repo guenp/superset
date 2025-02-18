@@ -16,10 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import { OPEN_FILTER_BAR_WIDTH } from 'src/dashboard/constants';
-import userEvent from '@testing-library/user-event';
-import { render, screen } from 'spec/helpers/testing-library';
+import { render, screen, userEvent } from 'spec/helpers/testing-library';
 import ActionButtons from './index';
 
 const createProps = () => ({

@@ -16,20 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import fetchMock from 'fetch-mock';
 import * as reactRedux from 'react-redux';
-import * as uiCore from '@superset-ui/core';
+import { isFeatureEnabled } from '@superset-ui/core';
 
 import waitForComponentToPaint from 'spec/helpers/waitForComponentToPaint';
 import { styledMount as mount } from 'spec/helpers/theming';
-import { render, screen, cleanup } from 'spec/helpers/testing-library';
-import userEvent from '@testing-library/user-event';
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  userEvent,
+} from 'spec/helpers/testing-library';
 import { QueryParamProvider } from 'use-query-params';
-import { act } from 'react-dom/test-utils';
 
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
 import DashboardList from 'src/pages/DashboardList';
@@ -48,6 +51,11 @@ const dashboardFavoriteStatusEndpoint =
   'glob:*/api/v1/dashboard/favorite_status*';
 const dashboardsEndpoint = 'glob:*/api/v1/dashboard/?*';
 const dashboardEndpoint = 'glob:*/api/v1/dashboard/*';
+
+jest.mock('@superset-ui/core', () => ({
+  ...jest.requireActual('@superset-ui/core'),
+  isFeatureEnabled: jest.fn(),
+}));
 
 const mockDashboards = [...new Array(3)].map((_, i) => ({
   id: i,
@@ -115,12 +123,12 @@ const store = mockStore({ user });
 const useSelectorMock = jest.spyOn(reactRedux, 'useSelector');
 
 describe('DashboardList', () => {
-  const isFeatureEnabledMock = jest
-    .spyOn(uiCore, 'isFeatureEnabled')
-    .mockImplementation(feature => feature === 'LISTVIEWS_DEFAULT_CARD_VIEW');
+  isFeatureEnabled.mockImplementation(
+    feature => feature === 'LISTVIEWS_DEFAULT_CARD_VIEW',
+  );
 
   afterAll(() => {
-    isFeatureEnabledMock.restore();
+    isFeatureEnabled.mockRestore();
   });
 
   beforeEach(() => {
@@ -145,11 +153,11 @@ describe('DashboardList', () => {
   });
 
   it('renders', () => {
-    expect(wrapper.find(DashboardList)).toExist();
+    expect(wrapper.find(DashboardList)).toBeTruthy();
   });
 
   it('renders a ListView', () => {
-    expect(wrapper.find(ListView)).toExist();
+    expect(wrapper.find(ListView)).toBeTruthy();
   });
 
   it('fetches info', () => {
@@ -162,31 +170,31 @@ describe('DashboardList', () => {
     const callsD = fetchMock.calls(/dashboard\/\?q/);
     expect(callsD).toHaveLength(1);
     expect(callsD[0][0]).toMatchInlineSnapshot(
-      `"http://localhost/api/v1/dashboard/?q=(order_column:changed_on_delta_humanized,order_direction:desc,page:0,page_size:25)"`,
+      `"http://localhost/api/v1/dashboard/?q=(order_column:changed_on_delta_humanized,order_direction:desc,page:0,page_size:25,select_columns:!(id,dashboard_title,published,url,slug,changed_by,changed_on_delta_humanized,owners.id,owners.first_name,owners.last_name,owners,tags.id,tags.name,tags.type,status,certified_by,certification_details,changed_on))"`,
     );
   });
 
   it('renders a card view', () => {
-    expect(wrapper.find(ListViewCard)).toExist();
+    expect(wrapper.find(ListViewCard)).toBeTruthy();
   });
 
   it('renders a table view', async () => {
     wrapper.find('[aria-label="list-view"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find('table')).toExist();
+    expect(wrapper.find('table')).toBeTruthy();
   });
 
   it('edits', async () => {
-    expect(wrapper.find(PropertiesModal)).not.toExist();
+    expect(wrapper.find(PropertiesModal).length).toBe(0);
     wrapper.find('[data-test="edit-alt"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(PropertiesModal)).toExist();
+    expect(wrapper.find(PropertiesModal).length).toBeGreaterThan(0);
   });
 
   it('card view edits', async () => {
     wrapper.find('[data-test="edit-alt"]').last().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(PropertiesModal)).toExist();
+    expect(wrapper.find(PropertiesModal)).toBeTruthy();
   });
 
   it('delete', async () => {
@@ -195,7 +203,7 @@ describe('DashboardList', () => {
       .first()
       .simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(ConfirmStatusChange)).toExist();
+    expect(wrapper.find(ConfirmStatusChange)).toBeTruthy();
   });
 
   it('card view delete', async () => {
@@ -204,19 +212,19 @@ describe('DashboardList', () => {
       .last()
       .simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(ConfirmStatusChange)).toExist();
+    expect(wrapper.find(ConfirmStatusChange)).toBeTruthy();
   });
 
   it('renders the Favorite Star column in list view for logged in user', async () => {
     wrapper.find('[aria-label="list-view"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(TableCollection).find(FaveStar)).toExist();
+    expect(wrapper.find(TableCollection).find(FaveStar)).toBeTruthy();
   });
 
   it('renders the Favorite Star in card view for logged in user', async () => {
     wrapper.find('[aria-label="card-view"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(CardCollection).find(FaveStar)).toExist();
+    expect(wrapper.find(CardCollection).find(FaveStar)).toBeTruthy();
   });
 });
 
@@ -237,17 +245,14 @@ describe('RTL', () => {
     return mounted;
   }
 
-  let isFeatureEnabledMock;
   beforeEach(async () => {
-    isFeatureEnabledMock = jest
-      .spyOn(uiCore, 'isFeatureEnabled')
-      .mockImplementation(() => true);
+    isFeatureEnabled.mockImplementation(() => true);
     await renderAndWait();
   });
 
   afterEach(() => {
     cleanup();
-    isFeatureEnabledMock.mockRestore();
+    isFeatureEnabled.mockRestore();
   });
 
   it('renders an "Import Dashboard" tooltip under import button', async () => {
@@ -283,18 +288,18 @@ describe('DashboardList - anonymous view', () => {
 
   afterAll(() => {
     cleanup();
-    fetch.resetMocks();
+    fetchMock.reset();
   });
 
   it('does not render the Favorite Star column in list view for anonymous user', async () => {
     wrapper.find('[aria-label="list-view"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(TableCollection).find(FaveStar)).not.toExist();
+    expect(wrapper.find(TableCollection).find(FaveStar).length).toBe(0);
   });
 
   it('does not render the Favorite Star in card view for anonymous user', async () => {
     wrapper.find('[aria-label="card-view"]').first().simulate('click');
     await waitForComponentToPaint(wrapper);
-    expect(wrapper.find(CardCollection).find(FaveStar)).not.toExist();
+    expect(wrapper.find(CardCollection).find(FaveStar).length).toBe(0);
   });
 });

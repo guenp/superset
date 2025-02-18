@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import { Provider } from 'react-redux';
 import { styledMount as mount } from 'spec/helpers/theming';
 import sinon from 'sinon';
@@ -46,6 +45,7 @@ describe('Header', () => {
     parentComponent: newComponentFactory(DASHBOARD_GRID_TYPE),
     index: 0,
     editMode: false,
+    embeddedMode: false,
     filters: {},
     handleComponentDrop() {},
     deleteComponent() {},
@@ -67,27 +67,27 @@ describe('Header', () => {
 
   it('should render a Draggable', () => {
     const wrapper = setup();
-    expect(wrapper.find(Draggable)).toExist();
+    expect(wrapper.find(Draggable)).toBeTruthy();
   });
 
   it('should render a WithPopoverMenu', () => {
     const wrapper = setup();
-    expect(wrapper.find(WithPopoverMenu)).toExist();
+    expect(wrapper.find(WithPopoverMenu)).toBeTruthy();
   });
 
   it('should render a HoverMenu in editMode', () => {
     let wrapper = setup();
-    expect(wrapper.find(HoverMenu)).not.toExist();
+    expect(wrapper.find(HoverMenu).length).toBe(0);
 
     // we cannot set props on the Header because of the WithDragDropContext wrapper
     wrapper = setup({ editMode: true });
-    expect(wrapper.find(HoverMenu)).toExist();
+    expect(wrapper.find(HoverMenu).length).toBeGreaterThan(0);
   });
 
   it('should render an EditableTitle with meta.text', () => {
     const wrapper = setup();
-    expect(wrapper.find(EditableTitle)).toExist();
-    expect(wrapper.find('.editable-title')).toHaveText(
+    expect(wrapper.find(EditableTitle)).toBeTruthy();
+    expect(wrapper.find('.editable-title').text()).toBe(
       props.component.meta.text,
     );
   });
@@ -108,7 +108,7 @@ describe('Header', () => {
     const wrapper = setup({ editMode: true });
     wrapper.find(WithPopoverMenu).simulate('click'); // focus
 
-    expect(wrapper.find(DeleteComponentButton)).toExist();
+    expect(wrapper.find(DeleteComponentButton)).toBeTruthy();
   });
 
   it('should call deleteComponent when deleted', () => {
@@ -118,5 +118,20 @@ describe('Header', () => {
     wrapper.find(DeleteComponentButton).simulate('click');
 
     expect(deleteComponent.callCount).toBe(1);
+  });
+
+  it('should render the AnchorLink in view mode', () => {
+    const wrapper = setup();
+    expect(wrapper.find('AnchorLink')).toBeTruthy();
+  });
+
+  it('should not render the AnchorLink in edit mode', () => {
+    const wrapper = setup({ editMode: true });
+    expect(wrapper.find('AnchorLink').length).toBe(0);
+  });
+
+  it('should not render the AnchorLink in embedded mode', () => {
+    const wrapper = setup({ embeddedMode: true });
+    expect(wrapper.find('AnchorLink').length).toBe(0);
   });
 });

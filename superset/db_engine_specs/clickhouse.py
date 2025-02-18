@@ -278,14 +278,14 @@ class ClickHouseConnectEngineSpec(BasicParametersMixin, ClickHouseEngineSpec):
 
     @classmethod
     def get_function_names(cls, database: Database) -> list[str]:
-        # pylint: disable=import-outside-toplevel,import-error
+        # pylint: disable=import-outside-toplevel, import-error
         from clickhouse_connect.driver.exceptions import ClickHouseError
 
         if cls._function_names:
             return cls._function_names
         try:
             names = database.get_df(
-                "SELECT name FROM system.functions UNION ALL "
+                "SELECT name FROM system.functions UNION ALL "  # noqa: S608
                 + "SELECT name FROM system.table_functions LIMIT 10000"
             )["name"].tolist()
             cls._function_names = names
@@ -340,7 +340,7 @@ class ClickHouseConnectEngineSpec(BasicParametersMixin, ClickHouseEngineSpec):
     def validate_parameters(
         cls, properties: BasicPropertiesType
     ) -> list[SupersetError]:
-        # pylint: disable=import-outside-toplevel,import-error
+        # pylint: disable=import-outside-toplevel, import-error
         from clickhouse_connect.driver import default_port
 
         parameters = properties.get("parameters", {})

@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React from 'react';
 import { t, validateNonEmpty } from '@superset-ui/core';
 import {
   ControlPanelConfig,
@@ -51,8 +50,7 @@ const config: ControlPanelConfig = {
               label: t('Sort X Axis'),
               choices: sortAxisChoices,
               renderTrigger: false,
-              clearable: false,
-              default: 'alpha_asc',
+              clearable: true,
             },
           },
         ],
@@ -64,8 +62,7 @@ const config: ControlPanelConfig = {
               label: t('Sort Y Axis'),
               choices: sortAxisChoices,
               renderTrigger: false,
-              clearable: false,
-              default: 'alpha_asc',
+              clearable: true,
             },
           },
         ],
